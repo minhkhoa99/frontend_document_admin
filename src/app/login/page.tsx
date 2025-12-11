@@ -23,7 +23,7 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const res = await http.post('/auth/login', { email, password });
+            const res = await http.post('/auth/login', { email, password, portal: 'admin' });
             const data = res.data;
 
             if (data.user.role !== 'admin') {
