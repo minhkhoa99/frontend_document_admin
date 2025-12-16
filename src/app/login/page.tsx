@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Eye, EyeOff } from 'lucide-react';
 import http from '@/lib/http';
+import Cookies from 'js-cookie';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -27,12 +28,15 @@ export default function LoginPage() {
             const data = res.data;
 
             if (data.user.role !== 'admin') {
+                // Logout to clear cookies if role mismatch
+                await http.post('/auth/logout');
                 setError('Tài khoản này không có quyền truy cập Admin.');
                 setLoading(false);
                 return;
             }
 
-            localStorage.setItem('adminAccessToken', data.access_token);
+            // localStorage.setItem('adminAccessToken', data.access_token);
+            Cookies.set('adminAccessToken', data.access_token, { expires: 1 });
             router.push('/');
         } catch (err: any) {
             console.error(err);

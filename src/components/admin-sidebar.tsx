@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import http from '@/lib/http';
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -26,30 +27,28 @@ export function AdminSidebar() {
     const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
 
     useEffect(() => {
-        // Mock admin user or fetch from token
-        // In real app, decode token similarly to buyer app
-        const token = localStorage.getItem('adminAccessToken');
-        if (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                const payload = JSON.parse(jsonPayload);
-                setUser({
-                    name: payload.fullName || 'Admin',
-                    email: payload.email || 'admin@edumarket.com',
-                    role: payload.role // Should be 'admin'
-                });
-            } catch (e) {
-                console.error("Invalid token", e);
-            }
-        }
+        // Fetch Admin profile using cookie
+        http.get('/auth/profile')
+            .then((response: any) => {
+                const data = response.data || response;
+                // api lib unwraps response.data, but let's be safe
+                if (data) {
+                    setUser({
+                        name: data.fullName || 'Admin',
+                        email: data.email || 'admin@edumarket.com',
+                        role: data.role
+                    });
+                }
+            })
+            .catch(err => console.error("Failed to fetch admin profile", err));
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('adminAccessToken');
+    const handleLogout = async () => {
+        try {
+            await http.post('/auth/logout');
+        } catch (e) {
+            console.error(e);
+        }
         router.push('/login');
     };
 
