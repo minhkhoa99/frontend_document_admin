@@ -45,6 +45,12 @@ interface Menu {
     isActive: boolean;
 }
 
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+}
+
 export default function MenusPage() {
     const [menus, setMenus] = useState<Menu[]>([]);
     const [loading, setLoading] = useState(true);
@@ -61,12 +67,13 @@ export default function MenusPage() {
     });
 
     const [flatMenus, setFlatMenus] = useState<Menu[]>([]); // For Parent Selection
+    const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
-        fetchMenus();
+        fetchData();
     }, []);
 
-    const fetchMenus = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
             // Fetch tree for display
@@ -77,8 +84,11 @@ export default function MenusPage() {
             const resAll = await http.get('/menus');
             setFlatMenus(resAll.data);
 
+            const resCats = await http.get('/categories');
+            setCategories(resCats.data);
+
         } catch (error) {
-            console.error('Failed to fetch menus', error);
+            console.error('Failed to fetch data', error);
         } finally {
             setLoading(false);
         }
@@ -130,7 +140,7 @@ export default function MenusPage() {
         if (!confirm('Bạn có chắc chắn muốn xóa menu này?')) return;
         try {
             await http.delete(`/menus/${id}`);
-            fetchMenus();
+            fetchData();
         } catch (error) {
             console.error('Failed to delete', error);
             alert('Lỗi xóa menu');
@@ -159,7 +169,7 @@ export default function MenusPage() {
                 await http.post('/menus', payload);
             }
             setIsOpen(false);
-            fetchMenus();
+            fetchData();
         } catch (error) {
             console.error('Failed to save', error);
             alert('Lỗi lưu menu');
@@ -214,7 +224,7 @@ export default function MenusPage() {
                         if (!confirm('Hành động này sẽ đánh lại toàn bộ số thứ tự menu từ đầu (1, 2, 3...). Bạn có chắc chắn?')) return;
                         try {
                             await http.post('/menus/auto-increment');
-                            fetchMenus();
+                            fetchData();
                             alert('Đã cập nhật thứ tự thành công!');
                         } catch (e) {
                             console.error(e);
@@ -274,12 +284,28 @@ export default function MenusPage() {
                             <Label htmlFor="link" className="text-right">
                                 Link
                             </Label>
-                            <Input
-                                id="link"
-                                value={formData.link}
-                                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                                className="col-span-3"
-                            />
+                            <div className="col-span-3">
+                                <Select
+                                    value={formData.link}
+                                    onValueChange={(val) => setFormData({ ...formData, link: val })}
+                                >
+                                    <SelectTrigger id="link">
+                                        <SelectValue placeholder="Chọn liên kết danh mục" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="/">-- Trang chủ --</SelectItem>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={`/categories/${cat.slug}`}>
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                        {/* Preserve existing if not in list */}
+                                        {formData.link && formData.link !== '/' && !categories.some(c => `/categories/${c.slug}` === formData.link) && (
+                                            <SelectItem value={formData.link}>{formData.link} (Hiện tại)</SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="parent" className="text-right">
