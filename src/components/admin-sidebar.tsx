@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import http from '@/lib/http';
+import Cookies from 'js-cookie';
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -44,11 +45,14 @@ export function AdminSidebar() {
     }, []);
 
     const handleLogout = async () => {
+        const refreshToken = Cookies.get('adminRefreshToken');
         try {
-            await http.post('/auth/logout');
+            await http.post('/auth/logout', { refresh_token: refreshToken });
         } catch (e) {
             console.error(e);
         }
+        Cookies.remove('adminAccessToken');
+        Cookies.remove('adminRefreshToken');
         router.push('/login');
     };
 

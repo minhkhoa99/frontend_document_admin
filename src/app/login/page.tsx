@@ -37,6 +37,9 @@ export default function LoginPage() {
 
             // localStorage.setItem('adminAccessToken', data.access_token);
             Cookies.set('adminAccessToken', data.access_token, { expires: 1 });
+            if (data.refresh_token) {
+                Cookies.set('adminRefreshToken', data.refresh_token, { expires: 30 });
+            }
             router.push('/');
         } catch (err: any) {
             console.error(err);
