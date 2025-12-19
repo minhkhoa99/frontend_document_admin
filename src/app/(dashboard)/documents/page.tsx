@@ -20,6 +20,7 @@ import {
 import { Check, X, Eye, FileText } from 'lucide-react';
 import http from '@/lib/http';
 import { cn } from '@/lib/utils';
+import { DocumentPreviewModal } from '@/components/document-preview-modal';
 
 interface Document {
     id: string;
@@ -36,6 +37,13 @@ export default function DocumentsPage() {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+    const [previewOpen, setPreviewOpen] = useState(false);
+
+    const handlePreview = (doc: Document) => {
+        setPreviewDoc(doc);
+        setPreviewOpen(true);
+    };
 
     useEffect(() => {
         fetchDocuments();
@@ -45,7 +53,7 @@ export default function DocumentsPage() {
         try {
             const res = await http.get('/documents');
             // Mock sort by date desc
-            const docs = res.data.sort((a: Document, b: Document) =>
+            const docs = (res.data.data || []).sort((a: Document, b: Document) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
             setDocuments(docs);
@@ -165,7 +173,7 @@ export default function DocumentsPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" title="Xem trước" onClick={() => window.open(doc.fileUrl, '_blank')}>
+                                                <Button variant="ghost" size="icon" title="Xem trước" onClick={() => handlePreview(doc)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
                                                 {doc.status === 'pending' && (
@@ -197,6 +205,12 @@ export default function DocumentsPage() {
                     </Table>
                 </div>
             </Tabs>
-        </div>
+
+            <DocumentPreviewModal
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                document={previewDoc}
+            />
+        </div >
     );
 }

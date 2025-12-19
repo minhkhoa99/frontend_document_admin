@@ -14,7 +14,8 @@ import {
     Shield,
     Menu,
     X,
-    Folder
+    Folder,
+    Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,6 +64,7 @@ export function AdminSidebar() {
         { label: 'Nội dung', href: '/documents', icon: FileText },
         { label: 'Danh mục', href: '/categories', icon: Folder },
         { label: 'Menu Website', href: '/menus', icon: Menu },
+        { label: 'Khối hiển thị', href: '/content-blocks', icon: Layers },
         { label: 'Cài đặt', href: '/settings', icon: Settings },
     ];
 

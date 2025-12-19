@@ -43,7 +43,8 @@ export default function UsersPage() {
     const fetchUsers = async () => {
         try {
             const res = await http.get('/users');
-            setUsers(res.data);
+            // Filter out admins (case insensitive check just in case)
+            setUsers(res.data.filter((u: User) => u.role.toLowerCase() !== 'admin'));
         } catch (error) {
             console.error('Failed to fetch users', error);
         } finally {
