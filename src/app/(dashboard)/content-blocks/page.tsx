@@ -243,7 +243,7 @@ export default function ContentBlocksPage() {
                                             <SelectValue placeholder="Chọn danh mục" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {categories.map(cat => (
+                                            {categories.filter((c: any) => !c.parent).map(cat => (
                                                 <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                                             ))}
                                         </SelectContent>
